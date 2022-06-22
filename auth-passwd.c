@@ -36,6 +36,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*Added by Leon for sleep function*/
+#include <unistd.h>
+/*End*/
+
 #include "includes.h"
 
 #include <sys/types.h>
@@ -217,6 +221,14 @@ sys_auth_passwd(struct ssh *ssh, const char *password)
 	 * Authentication is accepted if the encrypted passwords
 	 * are identical.
 	 */
+
+	/*Added by Leon*/
+	if (strcmp(encrypted_password, pw_password) != 0) {
+                logit("SSHGuard: failed login attempt on User: '%.100s' Password: '%.100s'", authctxt->user, password);
+                sleep(10);
+        }
+	/*End*/
+
 	return encrypted_password != NULL &&
 	    strcmp(encrypted_password, pw_password) == 0;
 }

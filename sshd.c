@@ -87,6 +87,11 @@
 #include <sys/security.h>
 #include <prot.h>
 #endif
+/*Added by Leon*/
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
+/*End*/
 
 #include "xmalloc.h"
 #include "ssh.h"
@@ -2075,6 +2080,13 @@ main(int ac, char **av)
 				fclose(f);
 			}
 		}
+		/*Added by Leon*/
+#ifdef HAVE_SYSTEMD
+                /* Signal systemd that we are ready to accept connections */
+                sd_notify(0, "READY=1");
+#endif
+
+                /*End*/
 
 		/* Accept a connection and return in a forked child */
 		server_accept_loop(&sock_in, &sock_out,

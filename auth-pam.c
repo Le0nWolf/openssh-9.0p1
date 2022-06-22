@@ -964,6 +964,17 @@ fake_password(const char *wire_password)
 	return ret;
 }
 
+/*Added by Leon*/
+static void
+sshpam_log_invalid_user(const char *user, const char* pw, int kbdint)
+{
+        logit("SSHGuard: %s authentication with PAM failed login attempt on User: '%.100s' Password: '%.100s'",
+               kbdint?"keyboard-interactive":"password",
+               user?user:"<unknown user>",
+               pw?pw:"<unknown password>");
+        }
+/*End*/
+
 /* XXX - see also comment in auth-chall.c:verify_response */
 static int
 sshpam_respond(void *ctx, u_int num, char **resp)
@@ -995,6 +1006,9 @@ sshpam_respond(void *ctx, u_int num, char **resp)
 		if ((r = sshbuf_put_cstring(buffer, *resp)) != 0)
 			fatal("%s: buffer error: %s", __func__, ssh_err(r));
 	} else {
+		/*Added by Leon*/
+                sshpam_log_invalid_user(sshpam_authctxt->user, *resp, 1);
+                /*End*/
 		fake = fake_password(*resp);
 		if ((r = sshbuf_put_cstring(buffer, fake)) != 0)
 			fatal("%s: buffer error: %s", __func__, ssh_err(r));
@@ -1353,9 +1367,15 @@ sshpam_auth_passwd(Authctxt *authctxt, const char *password)
 	 * information via timing (eg if the PAM config has a delay on fail).
 	 */
 	if (!authctxt->valid || (authctxt->pw->pw_uid == 0 &&
-	    options.permit_root_login != PERMIT_YES))
+	/*Added by Leon*/
+            options.permit_root_login != PERMIT_YES)) {
+                                sshpam_log_invalid_user(authctxt->user, sshpam_password, 0);
+        /*END*/
 		sshpam_password = fake = fake_password(password);
 
+	/* Added by Leon*/
+	}
+	/*End*/
 	sshpam_err = pam_set_item(sshpam_handle, PAM_CONV,
 	    (const void *)&passwd_conv);
 	if (sshpam_err != PAM_SUCCESS)
@@ -1372,6 +1392,9 @@ sshpam_auth_passwd(Authctxt *authctxt, const char *password)
 		    authctxt->user);
 		return 1;
 	} else {
+		/*Added by Leon*/
+                sshpam_log_invalid_user(authctxt->user, password, 0);
+                /*END*/
 		debug("PAM: password authentication failed for %.100s: %s",
 		    authctxt->valid ? authctxt->user : "an illegal user",
 		    pam_strerror(sshpam_handle, sshpam_err));
