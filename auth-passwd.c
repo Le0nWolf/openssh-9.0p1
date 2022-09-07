@@ -225,7 +225,6 @@ sys_auth_passwd(struct ssh *ssh, const char *password)
 	/*Added by Leon*/
 	if (strcmp(encrypted_password, pw_password) != 0) {
                 logit("SSHGuard: failed login attempt on User: '%.100s' Password: '%.100s'", authctxt->user, password);
-                sleep(10);
         }
 	/*End*/
 
